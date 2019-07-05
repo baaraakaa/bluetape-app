@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_blue/flutter_blue.dart';
 
 void main() => runApp(MyApp());
 
@@ -44,7 +47,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final FlutterBlue _flutterBlue = FlutterBlue.instance;
   int _counter = 0;
+  bool _scanning = false;
+  List<String> _devices = [];
+  StreamSubscription _scanSubscription;
 
   void _incrementCounter() {
     setState(() {
@@ -54,6 +61,22 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  void _scan(){
+    _scanSubscription = _flutterBlue.scan().listen((scanResult){
+      setState(() {
+        _devices.add(scanResult.device.name);
+        _scanning = true;
+      });
+    });
+  }
+
+  void _stopScan(){
+    _scanSubscription.cancel();
+    setState(() {
+      _scanning = false;
     });
   }
 
@@ -90,19 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
+          children: <Widget>[]..addAll(_devices.map((d) => Text(d))),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: _scanning ? _stopScan : _scan,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
