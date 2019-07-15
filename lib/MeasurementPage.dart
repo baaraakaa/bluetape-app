@@ -1,15 +1,16 @@
+import 'package:flutter/material.dart';
+import 'models/MeasurementSet.dart';
+import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 
-class ChatPage extends StatefulWidget {
+class MeasurementPage extends StatefulWidget {
+  final MeasurementSet set;
   final BluetoothDevice server;
 
-  const ChatPage({this.server});
-
+  const MeasurementPage(Key key, this.set, this.server) : super(key: key);
   @override
-  _ChatPage createState() => new _ChatPage();
+  _MeasurementPage createState() => new _MeasurementPage();
 }
 
 class _Message {
@@ -17,9 +18,13 @@ class _Message {
   String text;
 
   _Message(this.whom, this.text);
+
+  String asType(String measurementType) {
+    return measurementType + ' : ' + text;
+  }
 }
 
-class _ChatPage extends State<ChatPage> {
+class _MeasurementPage extends State<MeasurementPage> {
   static final clientID = 0;
   static final maxMessageLength = 4096 - 3;
 
@@ -74,25 +79,31 @@ class _ChatPage extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<Row> list = messages.map((_message) {
+    Map<int, _Message> indexedMessages =
+        messages.getRange(0, widget.set.measurements.length).toList().asMap();
+
+    final List<Row> list = indexedMessages.keys.map((idx) {
       return Row(
         children: <Widget>[
           Container(
             child: Text(
                 (text) {
                   return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
-                }(_message.text.trim()),
+                }(indexedMessages[idx]
+                    .asType(widget.set.measurements[idx])
+                    .trim()),
                 style: TextStyle(color: Colors.white)),
             padding: EdgeInsets.all(12.0),
             margin: EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
             width: 222.0,
             decoration: BoxDecoration(
-                color:
-                    _message.whom == clientID ? Colors.blueAccent : Colors.grey,
+                color: indexedMessages[idx].whom == clientID
+                    ? Colors.blueAccent
+                    : Colors.grey,
                 borderRadius: BorderRadius.circular(7.0)),
           ),
         ],
-        mainAxisAlignment: _message.whom == clientID
+        mainAxisAlignment: indexedMessages[idx].whom == clientID
             ? MainAxisAlignment.end
             : MainAxisAlignment.start,
       );
@@ -100,11 +111,7 @@ class _ChatPage extends State<ChatPage> {
 
     return Scaffold(
         appBar: AppBar(
-            title: (isConnecting
-                ? Text('Connecting chat to ' + widget.server.name + '...')
-                : isConnected
-                    ? Text('Live chat with ' + widget.server.name)
-                    : Text('Chat log with ' + widget.server.name))),
+            title: (Text(widget.set.measurements[messages.length]))),
         body: SafeArea(
             child: Column(children: <Widget>[
           Flexible(
