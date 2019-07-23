@@ -8,7 +8,7 @@ class MeasurementPage extends StatefulWidget {
   final MeasurementSet set;
   final BluetoothDevice server;
 
-  const MeasurementPage(Key key, this.set, this.server) : super(key: key);
+  const MeasurementPage({this.set, this.server});
   @override
   _MeasurementPage createState() => new _MeasurementPage();
 }
@@ -80,7 +80,7 @@ class _MeasurementPage extends State<MeasurementPage> {
   @override
   Widget build(BuildContext context) {
     Map<int, _Message> indexedMessages =
-        messages.getRange(0, widget.set.measurements.length).toList().asMap();
+        messages.toList().asMap();
 
     final List<Row> list = indexedMessages.keys.map((idx) {
       return Row(
@@ -90,7 +90,7 @@ class _MeasurementPage extends State<MeasurementPage> {
                 (text) {
                   return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
                 }(indexedMessages[idx]
-                    .asType(widget.set.measurements[idx])
+                    .asType(widget.set.measurements[idx % widget.set.measurements.length])
                     .trim()),
                 style: TextStyle(color: Colors.white)),
             padding: EdgeInsets.all(12.0),
@@ -111,7 +111,7 @@ class _MeasurementPage extends State<MeasurementPage> {
 
     return Scaffold(
         appBar: AppBar(
-            title: (Text(widget.set.measurements[messages.length]))),
+            title: (Text(widget.set.measurements[messages.length % widget.set.measurements.length]))),
         body: SafeArea(
             child: Column(children: <Widget>[
           Flexible(

@@ -6,8 +6,11 @@ import 'package:scoped_model/scoped_model.dart';
 import './DiscoveryPage.dart';
 import './SelectBondedDevicePage.dart';
 import './ChatPage.dart';
+import './MeasurementPage.dart';
 import './BackgroundCollectingTask.dart';
 import './BackgroundCollectedPage.dart';
+
+import './models/MeasurementSet.dart';
 
 //import './LineChart.dart';
 
@@ -236,6 +239,24 @@ class _MainPage extends State<MainPage> {
                 },
               ),
             ),
+            ListTile(
+              title: RaisedButton(
+                child: const Text('Connect to MEASUREMENTS'),
+                onPressed: () async {
+                  final BluetoothDevice selectedDevice = await Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) { return SelectBondedDevicePage(checkAvailability: false); })
+                  );
+
+                  if (selectedDevice != null) {
+                    print('Connect -> selected ' + selectedDevice.address);
+                    _startMeas(context, selectedDevice);
+                  }
+                  else {
+                    print('Connect -> no device selected');
+                  }
+                },
+              ),
+            ),
 
             Divider(),
             ListTile(
@@ -289,6 +310,10 @@ class _MainPage extends State<MainPage> {
 
   void _startChat(BuildContext context, BluetoothDevice server) {
     Navigator.of(context).push(MaterialPageRoute(builder: (context) { return ChatPage(server: server); }));
+  }
+
+  void _startMeas(BuildContext context, BluetoothDevice server) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) { return MeasurementPage(server: server,set: MeasurementSet('top',['sleeve length','neck around','shoulder width','chest around','waist around'])); }));
   }
 
   Future<void> _startBackgroundTask(BuildContext context, BluetoothDevice server) async {

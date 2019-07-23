@@ -27,6 +27,8 @@ dependencies:
 
   flutter_bluetooth_serial: ^0.2.0
   collection: ^1.14.11
+  sqflite: ^0.12.2+1
+  path_provider: ^0.4.1
 
 dev_dependencies:
   flutter_test:
