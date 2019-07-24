@@ -3,12 +3,14 @@ import 'models/MeasurementSet.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'dart:async';
 import 'dart:typed_data';
+import 'ComparePage.dart';
 
 class MeasurementPage extends StatefulWidget {
   final MeasurementSet set;
   final BluetoothDevice server;
 
   const MeasurementPage({this.set, this.server});
+
   @override
   _MeasurementPage createState() => new _MeasurementPage();
 }
@@ -38,6 +40,7 @@ class _MeasurementPage extends State<MeasurementPage> {
   final ScrollController listScrollController = new ScrollController();
 
   bool isConnecting = true;
+
   bool get isConnected => _streamSubscription != null;
 
   @override
@@ -79,8 +82,7 @@ class _MeasurementPage extends State<MeasurementPage> {
 
   @override
   Widget build(BuildContext context) {
-    Map<int, _Message> indexedMessages =
-        messages.toList().asMap();
+    Map<int, _Message> indexedMessages = messages.toList().asMap();
 
     final List<Row> list = indexedMessages.keys.map((idx) {
       return Row(
@@ -90,7 +92,8 @@ class _MeasurementPage extends State<MeasurementPage> {
                 (text) {
                   return text == '/shrug' ? '¯\\_(ツ)_/¯' : text;
                 }(indexedMessages[idx]
-                    .asType(widget.set.measurements[idx % widget.set.measurements.length])
+                    .asType(widget
+                        .set.measurements[idx % widget.set.measurements.length])
                     .trim()),
                 style: TextStyle(color: Colors.white)),
             padding: EdgeInsets.all(12.0),
@@ -111,7 +114,8 @@ class _MeasurementPage extends State<MeasurementPage> {
 
     return Scaffold(
         appBar: AppBar(
-            title: (Text(widget.set.measurements[messages.length % widget.set.measurements.length]))),
+            title: (Text(widget.set.measurements[
+                messages.length % widget.set.measurements.length]))),
         body: SafeArea(
             child: Column(children: <Widget>[
           Flexible(
@@ -137,13 +141,16 @@ class _MeasurementPage extends State<MeasurementPage> {
                       enabled: isConnected,
                     ))),
             Container(
-              margin: const EdgeInsets.all(8.0),
-              child: IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: isConnected
-                      ? () => _sendMessage(textEditingController.text)
-                      : null),
-            ),
+                margin: const EdgeInsets.all(8.0),
+                child: RaisedButton(
+                    child: Row(
+                      children: <Widget>[Text("Compare"), Icon(Icons.send)],
+                    ),
+                    onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => ComparePage(measurements: {
+                                  'chest': int.parse(messages[0].text)
+                                }))))),
           ])
         ])));
   }
